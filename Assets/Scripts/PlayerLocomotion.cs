@@ -39,7 +39,7 @@ namespace DM
         [SerializeField]
         float rotationSpeed = 10;
         [SerializeField]
-        float fallingSpeed = 60;
+        float fallingSpeed = 80f;
 
 
 
@@ -144,7 +144,6 @@ namespace DM
                 if(inputHandler.moveAmount > 0)
                 {
                     animatorHandler.PlayTargetAnimation("Rolling", true);
-                    rigidbody.AddForce(moveDirection*1.5f);
                     moveDirection.y = 0;
                     Quaternion rollRotation = Quaternion.LookRotation(moveDirection);
                     myTransform.rotation = rollRotation;
@@ -156,18 +155,21 @@ namespace DM
             }
         }
 
-        /*public void HandleFalling(float delta,Vector3 moveDirection)
+        public void HandleFalling(float delta, Vector3 moveDirection)
         {
             playerManager.isGrounded = false;
             RaycastHit hit;
             Vector3 origin = myTransform.position;
+            Debug.Log(origin);
             origin.y += groundDetectionRayStartPoint;
 
-            if(Physics.Raycast(origin,myTransform.forward, out hit, 0.4f))
+            //If you have something directly in front of you, you dont move at all
+            if(Physics.Raycast(origin,myTransform.forward,out hit, 0.4f))
             {
                 moveDirection = Vector3.zero;
             }
 
+            //if you are in air, you fall and you jump off of the ledge
             if (playerManager.isInAir)
             {
                 rigidbody.AddForce(-Vector3.up * fallingSpeed);
@@ -177,63 +179,14 @@ namespace DM
             Vector3 dir = moveDirection;
             dir.Normalize();
             origin = origin + dir * groundDirectionRayDistance;
+
             targetPosition = myTransform.position;
-            Debug.DrawRay(origin, -Vector3.up* minimumDistanceNeededToBeginFall, Color.red, 0.1f, false);
-            if(Physics.Raycast(origin,-Vector3.up,out hit, minimumDistanceNeededToBeginFall, ignoreForGroundCheck))
-            {
-                normalVector = hit.normal;
-                Vector3 tp = hit.point;
-                playerManager.isGrounded = true;
-                targetPosition.y = tp.y;
-                if (playerManager.isInAir)
-                {
-                    if(inAirTimer > 0.5f)
-                    {
-                        Debug.Log("You are in the air for " + inAirTimer);
-                        animatorHandler.PlayTargetAnimation("Land", true);
-                        inAirTimer = 0;
+            Debug.DrawRay(origin, -Vector3.up * minimumDistanceNeededToBeginFall, Color.red, 0.1f,false);
+            
 
-                    }
-                    else
-                    {
-                        animatorHandler.PlayTargetAnimation("Empty", false);
-                        inAirTimer = 0;
 
-                    }
-                    playerManager.isInAir = false;
-                }
-            }
-            else
-            {
-                if (playerManager.isGrounded)
-                {
-                    playerManager.isGrounded = false;
-                }
-                if (playerManager.isInAir == false)
-                {
-                    if(playerManager.isInteracting == false)
-                    {
-                        animatorHandler.PlayTargetAnimation("Falling", true); 
-                    }
-                    Vector3 vel = rigidbody.velocity;
-                    vel.Normalize();
-                    rigidbody.velocity = vel * (movementSpeed / 2f);
-                    playerManager.isInAir = true;
-
-                }
-            }
-            if (playerManager.isGrounded)
-            {
-                if(playerManager.isInteracting || inputHandler.moveAmount > 0)
-                {
-                    myTransform.position = Vector3.Lerp(myTransform.position, targetPosition, Time.deltaTime);
-                }
-                else
-                {
-                    myTransform.position = targetPosition;
-                }
-            }
-        }*/
+        }
+         
         #endregion
 
     }
