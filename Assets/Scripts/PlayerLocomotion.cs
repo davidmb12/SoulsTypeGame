@@ -23,13 +23,14 @@ namespace DM
 
         [Header("Ground & Air Detection Stats")]
         [SerializeField]
-        float groundDetectionRayStartPoint = 0.5f;
+        public float minimumDistanceNeededToBeginFall=0.6f;
         [SerializeField]
-        float minimumDistanceNeededToBeginFall = 1f;
+        public float groundDetectionRayStartPoint = 0.5f;
         [SerializeField]
-        float groundDirectionRayDistance = 0.2f;
-        LayerMask ignoreForGroundCheck;
+        public float groundDirectionRayDistance = 0.4f;
+        [SerializeField]
         public float inAirTimer;
+        LayerMask ignoreForGroundCheck;
         
         [Header("Movement Stats")]
         [SerializeField]
@@ -39,10 +40,10 @@ namespace DM
         [SerializeField]
         float rotationSpeed = 10;
         [SerializeField]
-        float fallingSpeed = 80f;
+        float fallingSpeed = 100f;
 
 
-
+        public Vector3 originDebugPoint;
 
         void Start()
         {
@@ -55,7 +56,6 @@ namespace DM
             animatorHandler.Initialize();
             playerManager.isGrounded = true;
             ignoreForGroundCheck = ~(1 << 8 | 1 << 11);
-
         }
 
 
@@ -154,37 +154,85 @@ namespace DM
                 }
             }
         }
-
         public void HandleFalling(float delta, Vector3 moveDirection)
         {
             playerManager.isGrounded = false;
             RaycastHit hit;
             Vector3 origin = myTransform.position;
-            Debug.Log(origin);
             origin.y += groundDetectionRayStartPoint;
 
-            //If you have something directly in front of you, you dont move at all
-            if(Physics.Raycast(origin,myTransform.forward,out hit, 0.4f))
-            {
+            if(Physics.Raycast(origin,myTransform.forward,out hit, 0.4f)){
                 moveDirection = Vector3.zero;
             }
-
-            //if you are in air, you fall and you jump off of the ledge
             if (playerManager.isInAir)
             {
                 rigidbody.AddForce(-Vector3.up * fallingSpeed);
-                rigidbody.AddForce(moveDirection * fallingSpeed / 5f);
+                rigidbody.AddForce(moveDirection * fallingSpeed / 10f);
             }
 
             Vector3 dir = moveDirection;
             dir.Normalize();
             origin = origin + dir * groundDirectionRayDistance;
-
+            originDebugPoint = origin;
             targetPosition = myTransform.position;
-            Debug.DrawRay(origin, -Vector3.up * minimumDistanceNeededToBeginFall, Color.red, 0.1f,false);
-            
+        
+            Debug.DrawRay(origin + myTransform.forward * (-0.15f), -Vector3.up * 0.5f, Color.red);
+            if (Physics.Raycast(origin + myTransform.forward * (-0.15f), -Vector3.up, out hit, minimumDistanceNeededToBeginFall, ignoreForGroundCheck))
+            {
+                normalVector = hit.normal;
+                Vector3 tp = hit.point;
+                playerManager.isGrounded = true;
+                targetPosition.y = tp.y;
+                if (playerManager.isInAir)
+                {
+                    if (inAirTimer > 0.5f)
+                    {
+                        animatorHandler.PlayTargetAnimation("Land", false);
+                        inAirTimer = 0;
+                    }
+                    else
+                    {
+                        animatorHandler.PlayTargetAnimation("Locomotion", false);
+                        inAirTimer = 0;
 
+                    }
+                    playerManager.isInAir = false;
+                }
+            }
+            else
+            {
+                if (playerManager.isGrounded)
+                {
+                    playerManager.isGrounded = false;
+                }
 
+                if(playerManager.isInAir == false)
+                {
+                    if(playerManager.isInteracting== false)
+                    {
+                        animatorHandler.PlayTargetAnimation("Falling", true);
+                    }
+
+                    Vector3 vel = rigidbody.velocity;
+                    vel.Normalize();
+                    rigidbody.velocity = vel * (movementSpeed / 2);
+                    playerManager.isInAir = true;
+
+                }
+            }
+            Debug.Log(targetPosition);
+            if (playerManager.isGrounded)
+            {
+                if(playerManager.isInteracting || inputHandler.moveAmount > 0)
+                {
+                    myTransform.position = Vector3.Lerp(myTransform.position, targetPosition, Time.deltaTime);
+                }
+                else
+                {
+                    myTransform.position = targetPosition;
+                }
+
+            }
         }
          
         #endregion
