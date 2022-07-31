@@ -12,19 +12,27 @@ namespace DM
         public float mouseY;
 
         public bool b_input;
+        public bool rb_input;
+        public bool rt_input;
+
         public bool rollFlag;
         public bool sprintFlag;
         public float rollInputTimer;
 
         PlayerControl inputActions;
-
+        PlayerAttacker playerAttacker;
+        PlayerInventory playerInventory;
 
         Vector2 movementInput;
         Vector2 cameraInput;
 
-        
+        private void Awake()
+        {
+            playerAttacker = GetComponent<PlayerAttacker>();
+            playerInventory = GetComponent<PlayerInventory>();
+        }
 
-       
+
         public void OnEnable()
         {
             //Initialize input actions
@@ -46,6 +54,7 @@ namespace DM
         {
             MoveInput(delta);
             HandleRollInput(delta);
+            HandleAttackInput(delta);
         }
 
         private void MoveInput(float delta)
@@ -74,6 +83,21 @@ namespace DM
                     rollFlag = true;
                 }
                 rollInputTimer = 0;
+            }
+        }
+
+        private void HandleAttackInput(float delta)
+        {
+            inputActions.PlayerActions.RB.performed += i => rb_input = true;
+            inputActions.PlayerActions.RT.performed += i => rt_input = true;
+
+            if (rb_input)
+            {
+                playerAttacker.HandleLightAttack(playerInventory.rightWeapon);
+            }
+            if (rt_input)
+            {
+                playerAttacker.HandleHeavyAttack(playerInventory.leftWeapon);
             }
         }
 

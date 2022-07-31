@@ -23,11 +23,11 @@ namespace DM
 
         [Header("Ground & Air Detection Stats")]
         [SerializeField]
-        public float minimumDistanceNeededToBeginFall=0.6f;
+        public float minimumDistanceNeededToBeginFall=0.59f;
         [SerializeField]
         public float groundDetectionRayStartPoint = 0.5f;
         [SerializeField]
-        public float groundDirectionRayDistance = 0.4f;
+        public float groundDirectionRayDistance = 0.1f;
         [SerializeField]
         public float inAirTimer;
         LayerMask ignoreForGroundCheck;
@@ -35,6 +35,8 @@ namespace DM
         [Header("Movement Stats")]
         [SerializeField]
         float movementSpeed = 5;
+        [SerializeField]
+        float walkingSpeed = 1;
         [SerializeField]
         float sprintSpeed = 7;
         [SerializeField]
@@ -107,8 +109,7 @@ namespace DM
             moveDirection.Normalize();
             moveDirection.y = 0;
             float speed = movementSpeed;
-
-            if (inputHandler.sprintFlag)
+            if (inputHandler.sprintFlag && inputHandler.moveAmount > 0.5f)
             {
                 speed = sprintSpeed;
                 playerManager.isSprinting = true;
@@ -116,7 +117,15 @@ namespace DM
             }
             else
             {
-                moveDirection *= speed;
+                if(inputHandler.moveAmount < 0.5)
+                {
+                    moveDirection *= walkingSpeed;
+                }
+                else
+                {
+                    moveDirection *= speed;
+                }
+                playerManager.isSprinting = false;
 
             }
 
@@ -166,19 +175,19 @@ namespace DM
             }
             if (playerManager.isInAir)
             {
-                rigidbody.AddForce(-Vector3.up * fallingSpeed);
+                rigidbody.AddForce(-Vector3.up * (fallingSpeed));
                 rigidbody.AddForce(moveDirection * fallingSpeed / 10f);
             }
 
             Vector3 dir = moveDirection;
             dir.Normalize();
-            origin = origin + dir * groundDirectionRayDistance;
             originDebugPoint = origin;
             targetPosition = myTransform.position;
         
-            Debug.DrawRay(origin + myTransform.forward * (-0.15f), -Vector3.up * 0.5f, Color.red);
-            if (Physics.Raycast(origin + myTransform.forward * (-0.15f), -Vector3.up, out hit, minimumDistanceNeededToBeginFall, ignoreForGroundCheck))
+            Debug.DrawRay(origin , -Vector3.up * minimumDistanceNeededToBeginFall, Color.red);
+            if (Physics.Raycast(origin, -Vector3.up, out hit, minimumDistanceNeededToBeginFall, ignoreForGroundCheck))
             {
+                Debug.Log(hit.point);
                 normalVector = hit.normal;
                 Vector3 tp = hit.point;
                 playerManager.isGrounded = true;
@@ -187,7 +196,7 @@ namespace DM
                 {
                     if (inAirTimer > 0.5f)
                     {
-                        animatorHandler.PlayTargetAnimation("Land", false);
+                        animatorHandler.PlayTargetAnimation("Land", true);
                         inAirTimer = 0;
                     }
                     else

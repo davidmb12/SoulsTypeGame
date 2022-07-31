@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: af4684b7a53a05547acbe2c795d43cc2
+guid: 20863c5c386ecf140a98d42ce36e16aa
 ModelImporter:
   serializedVersion: 21202
   internalIDToNameTable:
@@ -19,9 +19,7 @@ ModelImporter:
     optimizeGameObjects: 0
     removeConstantScaleCurves: 1
     motionNodeName: 
-    rigImportErrors: "Copied Avatar Rig Configuration mis-match. Transform hierarchy
-      does not match:\n\tParent for 'mixamorig:Hips' differs from one found in HumanDescription.
-      'Falling To Landing' was found instead of 'Armature'.\n"
+    rigImportErrors: 
     rigImportWarnings: 
     animationImportErrors: 
     animationImportWarnings: 

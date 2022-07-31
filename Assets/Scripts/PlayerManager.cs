@@ -59,7 +59,8 @@ namespace DM
         {
             inputHandler.rollFlag = false;
             inputHandler.sprintFlag = false;
-            isSprinting = inputHandler.b_input;
+            inputHandler.rb_input = false;
+            inputHandler.rt_input = false;
 
             if (isInAir)
             {
